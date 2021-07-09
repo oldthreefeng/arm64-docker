@@ -35,6 +35,16 @@ jobs:
           ref: ${{ steps.prepare.outputs.tag_name }}
           path: src/k8s.io/kube-state-metrics
 
+      - name: set up buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-buildx@v1
+        with:
+          version: latest
+
+      - name: login to dockerhub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+
+
       - name: Get metrics
         run: |
           wget -c https://raw.githubusercontent.com/oldthreefeng/arm64-docker/main/kube-state-metrics/kube-metrics.yml
@@ -52,26 +62,18 @@ jobs:
           name: kube-state-metrics-binaries
           path: src/k8s.io/kube-state-metrics/dist/kube-state-metrics*.tar.gz
 
-      - name: set up buildx
-        id: buildx
-        uses: crazy-max/ghaction-docker-buildx@v1
-        with:
-          version: latest
 
-      - name: login to dockerhub
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-
-      - name: build (and publish) main image
-        env:
-          # fork friendly ^^
-          DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
-        run: |
-          docker buildx build \
-            --platform linux/amd64,linux/arm64 \
-            --build-arg VERSION=${{ steps.prepare.outputs.tag_name }} \
-            --push \
-            -t ${DOCKER_REPO:-louisehong/kube-state-metrics}:${{ steps.prepare.outputs.tag_name }} \
-            -t ${DOCKER_REPO:-louisehong/kube-state-metrics}:latest \
-            -f Dockerfile.hub \
-            .
-        working-directory: src/k8s.io/kube-state-metrics
+      # - name: build (and publish) main image
+      #   env:
+      #     # fork friendly ^^
+      #     DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
+      #   run: |
+      #     docker buildx build \
+      #       --platform linux/amd64,linux/arm64 \
+      #       --build-arg VERSION=${{ steps.prepare.outputs.tag_name }} \
+      #       --push \
+      #       -t ${DOCKER_REPO:-louisehong/kube-state-metrics}:${{ steps.prepare.outputs.tag_name }} \
+      #       -t ${DOCKER_REPO:-louisehong/kube-state-metrics}:latest \
+      #       -f Dockerfile.hub \
+      #       .
+      #   working-directory: src/k8s.io/kube-state-metrics

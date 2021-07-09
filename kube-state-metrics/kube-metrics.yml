@@ -23,10 +23,28 @@ builds:
 checksum:
   name_template: '{{ .ProjectName }}_checksums.txt'
 snapshot:
-  name_template: "{{ .Tag }}-next"
+  name_template: "{{ .Tag }}"
 changelog:
   sort: asc
   filters:
     exclude:
       - '^docs:'
       - '^test:'
+
+dockers:
+- image_templates: 
+  - "louisehong/kube-state-metrics:{{ .Tag }}"
+  dockerfile: Dockerfile
+  use_buildx: true
+  build_flag_templates:
+  - "--platform=linux/amd64"
+- image_templates: 
+  - "louisehong/kube-state-metrics:{{ .Tag }}"
+  dockerfile: Dockerfile
+  use_buildx: true
+  build_flag_templates:
+  - "--platform=linux/arm64"
+docker_manifests:
+- name_template: louisehong/kube-state-metrics:{{ .Tag }}
+  image_templates:
+  - "louisehong/kube-state-metrics:{{ .Tag }}"

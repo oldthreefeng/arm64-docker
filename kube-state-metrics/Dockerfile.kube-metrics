@@ -10,7 +10,6 @@ USER nobody
 ARG TARGETPLATFORM
 WORKDIR /usr/bin
 
-
-RUN   --mount=type=cache,target=/tmp/dist &&  tar xf /tmp/dist/kube-state-metrics_*_$(echo ${TARGETPLATFORM} | tr '/' '_' | sed -e 's/arm_/arm/').tar.gz
+COPY kube-state-metrics kube-state-metrics
 
 EXPOSE 8080 8081
