@@ -1,31 +1,15 @@
 on:
   push:
     tags:
-      - 'kube-state-metrics-**' # Push events to matching v*, i.e. v1.0, v20.15.10
+      - 'kube-state-metrics-v**' # Push events to matching v*, i.e. v1.0, v20.15.10
 
-name: Containerd Release
+name: kube-state-metrics Release
 
 jobs:
-  check:
-    name: Check Signed Tag
-    runs-on: [ubuntu-18.04]
-    timeout-minutes: 5
-    outputs:
-      stringver: ${{ steps.contentrel.outputs.stringver }}
-
-    steps:
-
-
-      - name: Prepare
-        id: prepare
-        run: |
-          RELEASEVER=${{ github.ref }}
-          echo "::set-output name=stringver::${RELEASEVER#refs/tags/kube-state-metrics-}"
 
   build:
     name: Build Release Binaries
     runs-on: ${{ matrix.os }}
-    needs: [check]
     timeout-minutes: 15
 
     strategy:
@@ -38,28 +22,29 @@ jobs:
         with:
           go-version: '1.15.8'
 
+      - name: Prepare
+        id: prepare
+        run: |
+          RELEASEVER=${{ github.ref }}
+          echo "::set-output name=tag_name::${RELEASEVER#refs/tags/kube-state-metrics-}"
+
       - name: Checkout kube-state-metrics
         uses: actions/checkout@v2
         with:
           repository: kubernetes/kube-state-metrics
-          ref: ${{ github.ref }}
+          ref: ${{ steps.prepare.outputs.tag_name }}
           path: src/k8s.io/kube-state-metrics
 
       - name: Get metrics
         run: |
-          wget -c https://raw.githubusercontent.com/oldthreefeng/arm64-docker/kube-state-metrics/kube-metrics.yml
-          wget -c https://raw.githubusercontent.com/oldthreefeng/arm64-docker/kube-state-metrics/Dockerfile.kube-metrics 
+          wget -c https://raw.githubusercontent.com/oldthreefeng/arm64-docker/main/kube-state-metrics/kube-metrics.yml
+          wget -c https://raw.githubusercontent.com/oldthreefeng/arm64-docker/main/kube-state-metrics/Dockerfile.kube-metrics 
           cp kube-metrics.yml .goreleaser.yml
           cp Dockerfile.kube-metrics  Dockerfile.hub
+          curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh | sh
+          ./bin/goreleaser release --timeout=1h  --snapshot         
+        working-directory: src/k8s.io/kube-state-metrics
 
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v1
-        with:
-          version: latest
-          args: release --timeout=1h  --release-notes=test/Note.md
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          VERSION: ${{ steps.prepare.outputs.tag_name }}
       - name: set up buildx
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v1
@@ -82,3 +67,4 @@ jobs:
             -t ${DOCKER_REPO:-louisehong/kube-state-metrics}:latest \
             -f Dockerfile.hub \
             .
+        working-directory: src/k8s.io/kube-state-metrics
