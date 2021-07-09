@@ -11,7 +11,6 @@ builds:
       - linux
 #      - darwin
     goarch:
-      - amd64
       - arm64
     ldflags:
       - -X github.com/prometheus/common/version.Version=={{.Version}}
@@ -36,17 +35,9 @@ dockers:
   - "louisehong/kube-state-metrics:{{ .Tag }}"
   dockerfile: Dockerfile.hub
   use: buildx
-  build_flag_templates:
-  - "--platform=linux/amd64"
-  - "--push"
-  goarch: amd64
-- image_templates: 
-  - "louisehong/kube-state-metrics:{{ .Tag }}"
-  dockerfile: Dockerfile.hub
-  use: buildx
+  skip_push: false
   build_flag_templates:
   - "--platform=linux/arm64"
-  - "--push"
   goarch: arm64
 docker_manifests:
 - name_template: louisehong/kube-state-metrics:{{ .Tag }}
