@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.0-experimental
-FROM gcr.io/distroless/static
+FROM  alpine:latest
 
 LABEL MAINTAINER "louisehong <louisehong4168@gmail.com>"
 
