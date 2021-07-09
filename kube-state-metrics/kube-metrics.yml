@@ -39,6 +39,7 @@ dockers:
   build_flag_templates:
   - "--platform=linux/amd64"
   - "--push"
+  goarch: amd64
 - image_templates: 
   - "louisehong/kube-state-metrics:{{ .Tag }}"
   dockerfile: Dockerfile.hub
@@ -46,6 +47,7 @@ dockers:
   build_flag_templates:
   - "--platform=linux/arm64"
   - "--push"
+  goarch: arm64
 docker_manifests:
 - name_template: louisehong/kube-state-metrics:{{ .Tag }}
   image_templates:
