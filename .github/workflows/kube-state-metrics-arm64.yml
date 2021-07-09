@@ -54,7 +54,7 @@ jobs:
           cp kube-metrics.yml .goreleaser.yml
           cp Dockerfile.kube-metrics  Dockerfile.hub
           curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh | sh
-          ./bin/goreleaser release --timeout=1h
+          ./bin/goreleaser release --timeout=1h --sanpshot
         working-directory: src/k8s.io/kube-state-metrics
 
       - name: Save kube-state-metrics binaries
@@ -63,6 +63,11 @@ jobs:
           name: kube-state-metrics-binaries
           path: src/k8s.io/kube-state-metrics/dist/kube-state-metrics*.tar.gz
 
+      - name: push image
+        env:
+          DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
+        run: |
+          docker push ${DOCKER_REPO:-louisehong/kube-state-metrics}:${{ steps.prepare.outputs.tag_name }}
 
       # - name: build (and publish) main image
       #   env:
