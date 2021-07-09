@@ -11,6 +11,6 @@ ARG TARGETPLATFORM
 WORKDIR /usr/bin
 
 
-RUN  --mount=target=/tmp ls /tmp/ &&  tar xf /tmp/dist/kube-state-metrics_*_$(echo ${TARGETPLATFORM} | tr '/' '_' | sed -e 's/arm_/arm/').tar.gz
+RUN  --mount=target=/build &&  tar xf /build/dist/kube-state-metrics_*_$(echo ${TARGETPLATFORM} | tr '/' '_' | sed -e 's/arm_/arm/').tar.gz
 
 EXPOSE 8080 8081
