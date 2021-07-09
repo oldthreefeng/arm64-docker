@@ -59,6 +59,7 @@ jobs:
           # fork friendly ^^
           DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
         run: |
+          ls dist/kube-state-metrics_*.tar.gz -lh
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
             --build-arg VERSION=${{ steps.prepare.outputs.tag_name }} \
