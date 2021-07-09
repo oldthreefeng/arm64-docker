@@ -47,7 +47,7 @@ jobs:
 
       - name: Get metrics
         env:
-          GITHUB_TOKEN: {{secrets.GH_TOKEN}}
+          GITHUB_TOKEN: ${{secrets.GH_TOKEN}}
         run: |
           wget -c https://raw.githubusercontent.com/oldthreefeng/arm64-docker/main/kube-state-metrics/kube-metrics.yml
           wget -c https://raw.githubusercontent.com/oldthreefeng/arm64-docker/main/kube-state-metrics/Dockerfile.kube-metrics 
