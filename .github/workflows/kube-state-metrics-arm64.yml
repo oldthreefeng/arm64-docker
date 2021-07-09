@@ -50,7 +50,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: kube-state-metrics-binaries
-          path: src/k8s.io/kube-state-metrics/dist/src/k8s.io/kube-state-metrics*.tar.gz
+          path: src/k8s.io/kube-state-metrics/dist/kube-state-metrics*.tar.gz
 
       - name: set up buildx
         id: buildx
