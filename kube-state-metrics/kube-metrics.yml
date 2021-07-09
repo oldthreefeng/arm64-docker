@@ -34,13 +34,13 @@ changelog:
 dockers:
 - image_templates: 
   - "louisehong/kube-state-metrics:{{ .Tag }}"
-  dockerfile: Dockerfile
+  dockerfile: Dockerfile.hub
   use_buildx: true
   build_flag_templates:
   - "--platform=linux/amd64"
 - image_templates: 
   - "louisehong/kube-state-metrics:{{ .Tag }}"
-  dockerfile: Dockerfile
+  dockerfile: Dockerfile.hub
   use_buildx: true
   build_flag_templates:
   - "--platform=linux/arm64"
