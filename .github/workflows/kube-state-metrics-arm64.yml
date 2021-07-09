@@ -1,0 +1,84 @@
+on:
+  push:
+    tags:
+      - 'kube-state-metrics-**' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+name: Containerd Release
+
+jobs:
+  check:
+    name: Check Signed Tag
+    runs-on: [ubuntu-18.04]
+    timeout-minutes: 5
+    outputs:
+      stringver: ${{ steps.contentrel.outputs.stringver }}
+
+    steps:
+
+
+      - name: Prepare
+        id: prepare
+        run: |
+          RELEASEVER=${{ github.ref }}
+          echo "::set-output name=stringver::${RELEASEVER#refs/tags/kube-state-metrics-}"
+
+  build:
+    name: Build Release Binaries
+    runs-on: ${{ matrix.os }}
+    needs: [check]
+    timeout-minutes: 15
+
+    strategy:
+      matrix:
+        os: [ubuntu-18.04]
+
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: '1.15.8'
+
+      - name: Checkout kube-state-metrics
+        uses: actions/checkout@v2
+        with:
+          repository: kubernetes/kube-state-metrics
+          ref: ${{ github.ref }}
+          path: src/k8s.io/kube-state-metrics
+
+      - name: Get metrics
+        run: |
+          wget -c https://raw.githubusercontent.com/oldthreefeng/arm64-docker/kube-state-metrics/kube-metrics.yml
+          wget -c https://raw.githubusercontent.com/oldthreefeng/arm64-docker/kube-state-metrics/Dockerfile.kube-metrics 
+          cp kube-metrics.yml .goreleaser.yml
+          cp Dockerfile.kube-metrics  Dockerfile.hub
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v1
+        with:
+          version: latest
+          args: release --timeout=1h  --release-notes=test/Note.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          VERSION: ${{ steps.prepare.outputs.tag_name }}
+      - name: set up buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-buildx@v1
+        with:
+          version: latest
+
+      - name: login to dockerhub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+
+      - name: build (and publish) main image
+        env:
+          # fork friendly ^^
+          DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --build-arg VERSION=${{ steps.prepare.outputs.tag_name }} \
+            --push \
+            -t ${DOCKER_REPO:-louisehong/kube-state-metrics}:${{ steps.prepare.outputs.tag_name }} \
+            -t ${DOCKER_REPO:-louisehong/kube-state-metrics}:latest \
+            -f Dockerfile.hub \
+            .

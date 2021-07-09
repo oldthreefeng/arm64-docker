@@ -1,0 +1,15 @@
+# syntax=docker/dockerfile:1.0-experimental
+FROM gcr.io/distroless/static
+
+LABEL MAINTAINER "louisehong <louisehong4168@gmail.com>"
+
+ENTRYPOINT ["/usr/bin/kube-state-metrics", "--port=8080", "--telemetry-port=8081"]
+
+USER nobody
+
+ARG TARGETPLATFORM
+WORKDIR /usr/bin
+
+RUN --mount=target=/build tar xf /build/dist/kube-state-metrics_*_$(echo ${TARGETPLATFORM} | tr '/' '_' | sed -e 's/arm_/arm/').tar.gz
+
+EXPOSE 8080 8081
