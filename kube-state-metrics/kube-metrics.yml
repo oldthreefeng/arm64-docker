@@ -35,15 +35,17 @@ dockers:
 - image_templates: 
   - "louisehong/kube-state-metrics:{{ .Tag }}"
   dockerfile: Dockerfile.hub
-  use_buildx: true
+  use: buildx
   build_flag_templates:
   - "--platform=linux/amd64"
+  - "--push"
 - image_templates: 
   - "louisehong/kube-state-metrics:{{ .Tag }}"
   dockerfile: Dockerfile.hub
-  use_buildx: true
+  use: buildx
   build_flag_templates:
   - "--platform=linux/arm64"
+  - "--push"
 docker_manifests:
 - name_template: louisehong/kube-state-metrics:{{ .Tag }}
   image_templates:
